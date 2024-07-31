@@ -12,7 +12,7 @@ export class ProductController {
     return this.productService.create(createProductDto);
   }
 
-  @Get()
+  @Get('/get-all-product')
   findAll() {
     return this.productService.findAll();
   }
