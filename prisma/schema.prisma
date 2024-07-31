@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model carts {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  quantity  Int
+  users     users    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "carts_ibfk_1")
+  products  products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "carts_ibfk_2")
+
+  @@index([productId], map: "productId")
+  @@index([userId], map: "userId")
+}
+
+model comments {
+  id        Int      @id @default(autoincrement())
+  text      String   @db.Text
+  rating    Int
+  userId    Int
+  productId Int
+  users     users    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_1")
+  products  products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_2")
+
+  @@index([productId], map: "productId")
+  @@index([userId], map: "userId")
+}
+
+model orders {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  quantity   Int
+  totalPrice Decimal   @db.Decimal(10, 2)
+  orderDate  DateTime? @default(now()) @db.Timestamp(0)
+  users      users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_1")
+  products   products  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_2")
+
+  @@index([productId], map: "productId")
+  @@index([userId], map: "userId")
+}
+
+model products {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(255)
+  description String?    @db.Text
+  price       Decimal    @db.Decimal(10, 2)
+  stock       Int
+  carts       carts[]
+  comments    comments[]
+  orders      orders[]
+}
+
+model users {
+  id       Int        @id @default(autoincrement())
+  username String     @db.VarChar(255)
+  password String     @db.VarChar(255)
+  email    String     @db.VarChar(255)
+  avatar   String?    @db.VarChar(200)
+  role     String     @db.VarChar(200)
+  carts    carts[]
+  comments comments[]
+  orders   orders[]
+}
