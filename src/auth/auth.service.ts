@@ -12,16 +12,16 @@ export class AuthService {
     private prismaService: PrismaService,
   ) {}
   async login(model: LoginDto) {
-    const { userName, password } = model;
+    const { email, password } = model;
 
-    const checkUserName = await this.prismaService.users.findFirst({
+    const checkEmail = await this.prismaService.users.findFirst({
       where: {
-        username: userName,
+        email,
       },
     });
-    if (checkUserName) {
-      if (bcrypt.compareSync(password, checkUserName.password)) {
-        let userId = { id: checkUserName.id };
+    if (checkEmail) {
+      if (bcrypt.compareSync(password, checkEmail.password)) {
+        let userId = { id: checkEmail.user_id };
         let token = this.jwtService.sign(userId, {
           expiresIn: '1d',
           algorithm: 'HS256',
@@ -37,23 +37,25 @@ export class AuthService {
   }
 
   async signUp(model: SignUpDto): Promise<string> {
-    const { userName, email, password } = model;
-    const checkUserName = await this.prismaService.users.findFirst({
+    const { name, email, password } = model;
+    const checkEmail = await this.prismaService.users.findFirst({
       where: {
-        username: userName,
+        email,
       },
     });
 
-    if (checkUserName) {
+    if (checkEmail) {
       return 'Tên người dùng đã tồn tại';
     }
 
     const hashedPassword = bcrypt.hashSync(password, 10);
 
     const newUser = {
-      username: userName,
-      email,
+      name,
       password: hashedPassword,
+      email,
+      phone: '',
+      avatar: '',
       role: 'USER',
     };
 

@@ -18,9 +18,11 @@ export class UserService {
 
     const hashedPassword = bcrypt.hashSync(userInfoDTO.password, 10);
     const newData = {
-      username: userInfoDTO.username,
-      email: userInfoDTO.email,
+      name: userInfoDTO.name,
       password: hashedPassword,
+      email: userInfoDTO.email,
+      phone: userInfoDTO.phone,
+      avatar: userInfoDTO.avatar,
       role: userInfoDTO.role,
     };
 
@@ -31,40 +33,41 @@ export class UserService {
     return this.prismaService.users.findMany();
   }
 
-  async findOne(id: number): Promise<any> {
-    return this.prismaService.users.findUnique({ where: { id } });
+  async findOne(user_id: number): Promise<any> {
+    return this.prismaService.users.findUnique({ where: { user_id } });
   }
 
-  async update(id: number, userInfoDTO: UserInfoDTO): Promise<any> {
+  async update(user_id: number, userInfoDTO: UserInfoDTO): Promise<any> {
     const hashedPassword = userInfoDTO.password
       ? bcrypt.hashSync(userInfoDTO.password, 10)
       : undefined;
 
     const newData = {
-      username: userInfoDTO.username,
-      email: userInfoDTO.email,
+      name: userInfoDTO.name,
       password: hashedPassword,
+      email: userInfoDTO.email,
+      phone: userInfoDTO.phone,
+      avatar: userInfoDTO.avatar,
       role: userInfoDTO.role,
-      avatar: userInfoDTO.avatar
     };
 
     return this.prismaService.users.update({
-      where: { id },
+      where: { user_id },
       data: newData,
     });
   }
 
-  async remove(id: number): Promise<any> {
-    return this.prismaService.users.delete({ where: { id } });
+  async remove(user_id: number): Promise<any> {
+    return this.prismaService.users.delete({ where: { user_id } });
   }
 
-  async searchUserInfoByName(username: string): Promise<any> {
-    return this.prismaService.users.findMany({ where: { username } });
+  async searchUserInfoByName(name: string): Promise<any> {
+    return this.prismaService.users.findMany({ where: { name } });
   }
 
-  async uploadAvatar(id: number, url: string): Promise<any> {
+  async uploadAvatar(user_id: number, url: string): Promise<any> {
     return this.prismaService.users.update({
-      where: { id },
+      where: { user_id },
       data: { avatar: url },
     });
   }

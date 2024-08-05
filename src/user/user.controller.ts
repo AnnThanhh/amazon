@@ -2,11 +2,11 @@ import { diskStorage } from 'multer';
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Put, UseInterceptors, Req, UploadedFiles } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { users } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 import { UserInfoDTO } from './dto/user.dto';
 import { FilesUploadDto } from 'src/file/file-upload.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { Users } from '@prisma/client';
 
 @ApiTags('User')
 @Controller('user')
@@ -14,14 +14,13 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get("/get-users")
-  findAll(): Promise<users[]> {
+  findAll(): Promise<Users[]> {
     return this.userService.findAll();
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @Post("/create-user")
-  @Post()
   create(@Body() userInfoDTO: UserInfoDTO) {
     return this.userService.create(userInfoDTO);
   }

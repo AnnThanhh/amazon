@@ -7,64 +7,166 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model carts {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  productId Int
-  quantity  Int
-  users     users    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "carts_ibfk_1")
-  products  products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "carts_ibfk_2")
+model Addresses {
+  address_id Int     @id @default(autoincrement())
+  user_id    Int?
+  street     String? @db.VarChar(255)
+  city       String? @db.VarChar(100)
+  state      String? @db.VarChar(100)
+  zip_code   String? @db.VarChar(20)
+  country    String? @db.VarChar(100)
+  Users      Users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Addresses_ibfk_1")
 
-  @@index([productId], map: "productId")
-  @@index([userId], map: "userId")
+  @@index([user_id], map: "user_id")
 }
 
-model comments {
-  id        Int      @id @default(autoincrement())
-  text      String   @db.Text
-  rating    Int
-  userId    Int
-  productId Int
-  users     users    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_1")
-  products  products @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_2")
-
-  @@index([productId], map: "productId")
-  @@index([userId], map: "userId")
-}
-
-model orders {
-  id         Int       @id @default(autoincrement())
-  userId     Int
-  productId  Int
-  quantity   Int
-  totalPrice Decimal   @db.Decimal(10, 2)
-  orderDate  DateTime? @default(now()) @db.Timestamp(0)
-  users      users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_1")
-  products   products  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_2")
-
-  @@index([productId], map: "productId")
-  @@index([userId], map: "userId")
-}
-
-model products {
-  id          Int        @id @default(autoincrement())
+model Categories {
+  category_id Int        @id @default(autoincrement())
   name        String     @db.VarChar(255)
   description String?    @db.Text
-  price       Decimal    @db.Decimal(10, 2)
-  stock       Int
-  carts       carts[]
-  comments    comments[]
-  orders      orders[]
+  Products    Products[]
 }
 
-model users {
-  id       Int        @id @default(autoincrement())
-  username String     @db.VarChar(255)
-  password String     @db.VarChar(255)
-  email    String     @db.VarChar(255)
-  avatar   String?    @db.VarChar(200)
-  role     String     @db.VarChar(200)
-  carts    carts[]
-  comments comments[]
-  orders   orders[]
+model Comments {
+  comment_id Int       @id @default(autoincrement())
+  user_id    Int?
+  product_id Int?
+  content    String    @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  Users      Users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Comments_ibfk_1")
+  Products   Products? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "Comments_ibfk_2")
+
+  @@index([product_id], map: "product_id")
+  @@index([user_id], map: "user_id")
+}
+
+model OrderItems {
+  order_item_id Int       @id @default(autoincrement())
+  order_id      Int?
+  product_id    Int?
+  quantity      Int
+  price         Decimal   @db.Decimal(10, 2)
+  Orders        Orders?   @relation(fields: [order_id], references: [order_id], onDelete: NoAction, onUpdate: NoAction, map: "OrderItems_ibfk_1")
+  Products      Products? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "OrderItems_ibfk_2")
+
+  @@index([order_id], map: "order_id")
+  @@index([product_id], map: "product_id")
+}
+
+model Orders {
+  order_id     Int          @id @default(autoincrement())
+  user_id      Int?
+  total_amount Decimal      @db.Decimal(10, 2)
+  order_date   DateTime?    @default(now()) @db.Timestamp(0)
+  status       String?      @db.VarChar(50)
+  OrderItems   OrderItems[]
+  Users        Users?       @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Orders_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model ProductImages {
+  image_id   Int       @id @default(autoincrement())
+  product_id Int?
+  image_url  String?   @db.VarChar(255)
+  Products   Products? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "ProductImages_ibfk_1")
+
+  @@index([product_id], map: "product_id")
+}
+
+model Products {
+  product_id     Int             @id @default(autoincrement())
+  creator_id     Int?
+  name           String          @db.VarChar(255)
+  description    String?         @db.Text
+  price          Decimal         @db.Decimal(10, 2)
+  stock_quantity Int
+  category_id    Int?
+  Comments       Comments[]
+  OrderItems     OrderItems[]
+  ProductImages  ProductImages[]
+  Users          Users?          @relation(fields: [creator_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Products_ibfk_1")
+  Categories     Categories?     @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "Products_ibfk_2")
+  Reviews        Reviews[]
+  StoreProducts  StoreProducts[]
+  WishlistItems  WishlistItems[]
+
+  @@index([category_id], map: "category_id")
+  @@index([creator_id], map: "creator_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model Reviews {
+  review_id  Int       @id @default(autoincrement())
+  user_id    Int?
+  product_id Int?
+  rating     Int?
+  comment    String?   @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  Users      Users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Reviews_ibfk_1")
+  Products   Products? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "Reviews_ibfk_2")
+
+  @@index([product_id], map: "product_id")
+  @@index([user_id], map: "user_id")
+}
+
+model StoreProducts {
+  store_product_id Int       @id @default(autoincrement())
+  store_id         Int?
+  product_id       Int?
+  Stores           Stores?   @relation(fields: [store_id], references: [store_id], onDelete: NoAction, onUpdate: NoAction, map: "StoreProducts_ibfk_1")
+  Products         Products? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "StoreProducts_ibfk_2")
+
+  @@index([product_id], map: "product_id")
+  @@index([store_id], map: "store_id")
+}
+
+model Stores {
+  store_id      Int             @id @default(autoincrement())
+  user_id       Int?
+  store_name    String          @db.VarChar(255)
+  description   String?         @db.Text
+  created_at    DateTime?       @default(now()) @db.Timestamp(0)
+  StoreProducts StoreProducts[]
+  Users         Users?          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Stores_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model Users {
+  user_id   Int         @id @default(autoincrement())
+  name      String      @db.VarChar(255)
+  email     String      @unique(map: "email") @db.VarChar(255)
+  phone     String?     @db.VarChar(20)
+  avatar    String?     @db.VarChar(255)
+  role      String?     @db.VarChar(50)
+  password  String      @db.VarChar(255)
+  Addresses Addresses[]
+  Comments  Comments[]
+  Orders    Orders[]
+  Products  Products[]
+  Reviews   Reviews[]
+  Stores    Stores[]
+  Wishlists Wishlists[]
+}
+
+model WishlistItems {
+  wishlist_item_id Int        @id @default(autoincrement())
+  wishlist_id      Int?
+  product_id       Int?
+  Wishlists        Wishlists? @relation(fields: [wishlist_id], references: [wishlist_id], onDelete: NoAction, onUpdate: NoAction, map: "WishlistItems_ibfk_1")
+  Products         Products?  @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction, map: "WishlistItems_ibfk_2")
+
+  @@index([product_id], map: "product_id")
+  @@index([wishlist_id], map: "wishlist_id")
+}
+
+model Wishlists {
+  wishlist_id   Int             @id @default(autoincrement())
+  user_id       Int?
+  created_at    DateTime?       @default(now()) @db.Timestamp(0)
+  WishlistItems WishlistItems[]
+  Users         Users?          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Wishlists_ibfk_1")
+
+  @@index([user_id], map: "user_id")
 }

@@ -2,15 +2,13 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
-import { ProductModule } from './product/product.module';
 import { AuthModule } from './auth/auth.module';
-import { CommentModule } from './comment/comment.module';
-import { CartModule } from './cart/cart.module';
 import { ConfigModule } from '@nestjs/config';
+import { JwtStrategy } from './strategy/jwt.strategy';
 
 @Module({
-  imports: [UserModule, ProductModule, AuthModule, CommentModule, CartModule, ConfigModule.forRoot({ isGlobal: true })],
+  imports: [UserModule, AuthModule, ConfigModule.forRoot({ isGlobal: true })],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtStrategy],
 })
 export class AppModule {}
